@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Automation Sign-up</title>
+  <style>
+    :root {
+      --bg: #0b1120;
+      --card: rgba(15, 23, 42, 0.9);
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --accent: #22d3ee;
+      --accent-strong: #06b6d4;
+      --border: rgba(148, 163, 184, 0.25);
+      --ok: #10b981;
+      --err: #ef4444;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: radial-gradient(circle at top, #1e293b 0%, var(--bg) 45%, #020617 100%);
+      color: var(--text);
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    .card {
+      width: min(760px, 100%);
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 28px;
+      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.45);
+      backdrop-filter: blur(8px);
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(1.4rem, 2.5vw, 2rem);
+    }
+
+    p {
+      margin: 0 0 22px;
+      color: var(--muted);
+      font-size: 0.96rem;
+    }
+
+    form {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .full { grid-column: 1 / -1; }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 0.9rem;
+      color: #cbd5e1;
+    }
+
+    input,
+    select {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 11px 12px;
+      background: rgba(15, 23, 42, 0.65);
+      color: var(--text);
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.18);
+    }
+
+    button {
+      border: none;
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #042f2e;
+      background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+      cursor: pointer;
+      transition: transform 0.14s ease, filter 0.2s;
+    }
+
+    button:hover { filter: brightness(1.05); }
+    button:active { transform: translateY(1px); }
+    button:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
+    .status {
+      min-height: 20px;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .status.ok { color: var(--ok); }
+    .status.err { color: var(--err); }
+
+    @media (max-width: 720px) {
+      form { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <section class="card">
+    <h1>Customer Onboarding</h1>
+    <p>Professionelle Sign-up Form für modernes AI-Automation Onboarding.</p>
+
+    <form id="signup-form">
+      <div>
+        <label for="vorname">Vorname</label>
+        <input id="vorname" name="Vorname" type="text" required placeholder="Max" />
+      </div>
+
+      <div>
+        <label for="nachname">Nachname</label>
+        <input id="nachname" name="Nachname" type="text" required placeholder="Mustermann" />
+      </div>
+
+      <div>
+        <label for="geburtsdatum">Geburtsdatum</label>
+        <input id="geburtsdatum" name="Geburtsdatum" type="date" required />
+      </div>
+
+      <div>
+        <label for="familienstand">Familienstand</label>
+        <select id="familienstand" name="Familienstand" required>
+          <option value="" disabled selected>Bitte auswählen</option>
+          <option value="Ledig">Ledig</option>
+          <option value="Verheiratet">Verheiratet</option>
+          <option value="Geschieden">Geschieden</option>
+          <option value="Verwitwet">Verwitwet</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="email">E-mail</label>
+        <input id="email" name="E-mail" type="email" required placeholder="max@firma.de" />
+      </div>
+
+      <div>
+        <label for="telefon">Telefonnummer</label>
+        <input id="telefon" name="Telefonnummer" type="tel" required placeholder="+49 151 1234567" />
+      </div>
+
+      <div class="full">
+        <label for="package">Package</label>
+        <select id="package" name="Package" required>
+          <option value="" disabled selected>Bitte auswählen</option>
+          <option value="Fundamental">Fundamental</option>
+          <option value="advanced">advanced</option>
+          <option value="Premium">Premium</option>
+        </select>
+      </div>
+
+      <div class="full">
+        <button id="submit-btn" type="submit">Sign-up abschicken</button>
+      </div>
+      <div id="status" class="status full" aria-live="polite"></div>
+    </form>
+  </section>
+
+  <script>
+    const form = document.getElementById('signup-form');
+    const statusEl = document.getElementById('status');
+    const submitBtn = document.getElementById('submit-btn');
+    const webhookUrl = encodeURI('http://localhost:5678/webhook-test/Customer onboarding - sign-up form');
+
+    const formatDate = (dateString) => {
+      const [year, month, day] = dateString.split('-');
+      return `${day}.${month}.${year}`;
+    };
+
+    const todayGerman = () => {
+      const now = new Date();
+      const day = String(now.getDate()).padStart(2, '0');
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const year = now.getFullYear();
+      return `${day}.${month}.${year}`;
+    };
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      statusEl.className = 'status';
+      statusEl.textContent = 'Wird gesendet...';
+      submitBtn.disabled = true;
+
+      const payload = {
+        Vorname: form.vorname.value.trim(),
+        Nachname: form.nachname.value.trim(),
+        Geburtsdatum: formatDate(form.geburtsdatum.value),
+        Familienstand: form.familienstand.value,
+        'E-mail': form.email.value.trim(),
+        Telefonnummer: form.telefon.value.trim(),
+        Package: form.package.value,
+        Source: 'website',
+        'Signup date': todayGerman()
+      };
+
+      try {
+        const response = await fetch(webhookUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        statusEl.className = 'status ok';
+        statusEl.textContent = 'Erfolgreich gesendet. Vielen Dank!';
+        form.reset();
+      } catch (error) {
+        statusEl.className = 'status err';
+        statusEl.textContent = 'Fehler beim Senden. Bitte n8n Webhook prüfen.';
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
